@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DNS污染检测</title>
+</head>
+<body>
+<h4>域名列表</h4>
+<p style="font-size:14px;color:#808080;">一行一个域名</p>
+<div><textarea id="domainList" style="width:600px;height:300px;"></textarea></div>
+<div>
+    <button id="submit" type="button">开始检测</button>
+</div>
+<hr/>
+<div id="checkResult">
+
+</div>
+<div id="checkTip" style="display: none;">检查中，请稍候...</div>
+<script type="text/javascript" src="//lib.sinaapp.com/js/jquery/3.1.0/jquery-3.1.0.min.js"></script>
+<script type="text/javascript" src="/static/js/domain_suffix.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $('#submit').click(function () {
+            var domains = $.trim($('#domainList').val());
+            if (domains === '') {
+                alert('至少输入一个域名');
+                return false;
+            }
+
+            startChecking();
+            $.each(domains.split('\n'), function (index, item) {
+                let domain = getMainHost(item);
+                putCheckResult(domain);
+                $.get('/api/app/domain/pollute_check?domains=' + domain, function (response) {
+                    putCheckResult(domain, response);
+                });
+            })
+        });
+    });
+
+    function putCheckResult(domain, response) {
+        $('#checkTip').hide();
+        $('#checkResult').show();
+        if (response) {
+            if (response.code == 0) {
+                $.each(response.data, function (index, item) {
+                    let elem = $('.' + item['domain'].replace('.', '_') + 'Result');
+                        elem.html(item['polluted'] ? '已污染' : '未污染')
+                    if (item['polluted']) {
+                        elem.css({color: 'red'});
+                    } else {
+                        elem.css({color: 'green'});
+                    }
+                    // $('#checkResult').append('<div>' + item['domain'] + ': ' + (item['polluted'] ? '<span style="color:red">已污染</span>' : '<span style="color:green">未污染</span>') + '</div>');
+                });
+            }
+        } else {
+            $('#checkResult').append('<div>' + domain + ': <span class="' + domain.replace('.', '_') + 'Result" style="color:gray;">查询中...</span></div>');
+        }
+    }
+
+    function startChecking() {
+        $('#checkTip').show();
+        $('#checkResult').hide();
+        $('#checkResult').html('');
+    }
+
+    function getMainHost(url) {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'http://' + url;
+        }
+        url = parseURL(url);
+        let host = []
+        let hostParts = url.host.split('.');
+        for (let i = hostParts.length - 1; i < hostParts.length; i--) {
+            host.insert(0, hostParts[i]);
+            if (domainSuffix.indexOf(host.join('.')) == -1) {
+                return host.join('.');
+            }
+        }
+        return url.host;
+    }
+
+    function parseURL(url) {
+        var a = document.createElement('a');
+        a.href = url;
+        // var a = new URL(url);
+        return {
+            source: url,
+            protocol: a.protocol.replace(':', ''),
+            host: a.hostname,
+            port: a.port,
+            query: a.search,
+            params: (function () {
+                var params = {},
+                    seg = a.search.replace(/^\?/, '').split('&'),
+                    len = seg.length,
+                    p;
+                for (var i = 0; i < len; i++) {
+                    if (seg[i]) {
+                        p = seg[i].split('=');
+                        params[p[0]] = p[1];
+                    }
+                }
+                return params;
+            })(),
+            hash: a.hash.replace('#', ''),
+            path: a.pathname.replace(/^([^\/])/, '/$1')
+        };
+    }
+
+    Array.prototype.insert = function (index, item) {
+        this.splice(index, 0, item);
+    };
+</script>
+</body>
+</html>

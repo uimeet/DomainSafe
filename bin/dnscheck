@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+  echo "Usage: $(basename $0) domain"
+  echo "  -h, --help    Show this help"
+}
+
+isblocked() {
+  if [[ $(dig @a.root-servers.net. ${1} | grep 'ANSWER SECTION') ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+set -e
+
+[[ "$#" -eq 0 ]] && usage && exit 0
+
+domain=$1
+
+if isblocked "${domain}"; then
+  echo 0
+else
+  echo 1
+fi
