@@ -33,16 +33,37 @@
                 putCheckResult(domain);
                 $.get('/api/app/domain/pollute_check?domains=' + domain, function (response) {
                     putCheckResult(domain, response);
+                    let polluted = response.code === 0 && response.data[0].polluted;
+                    // 获取ip和title
+                    pingGet(item, domain, polluted);
                 });
             })
         });
     });
 
+    function pingGet(url, domain, polluted) {
+        $.get('/api/app/domain/ping_get?domains=' + encodeURIComponent(url) + '&proxy=' + polluted.toString(), function (response) {
+            putIPResult(response, domain);
+        });
+    }
+
+    function putIPResult(response, domain) {
+        if (response.code === 0) {
+            $.each(response.data, function (index, item) {
+                let elem = $('.' + item['domain'].replace('.', '_') + 'IP');
+                    elem.html(item.title + ' - ' + item.ip.join(','));
+            });
+        } else {
+            $('.' + domain.replace('.', '_') + 'IP').html(response.message);
+        }
+    }
+
     function putCheckResult(domain, response) {
         $('#checkTip').hide();
         $('#checkResult').show();
+
         if (response) {
-            if (response.code == 0) {
+            if (response.code === 0) {
                 $.each(response.data, function (index, item) {
                     let elem = $('.' + item['domain'].replace('.', '_') + 'Result');
                         elem.html(item['polluted'] ? '已污染' : '未污染')
@@ -55,7 +76,7 @@
                 });
             }
         } else {
-            $('#checkResult').append('<div>' + domain + ': <span class="' + domain.replace('.', '_') + 'Result" style="color:gray;">查询中...</span></div>');
+            $('#checkResult').append('<div>' + domain + ': <span class="' + domain.replace('.', '_') + 'Result" style="color:gray;">查询中...</span> - <span class="' + domain.replace('.', '_') + 'IP">获取IP中...</span></div>');
         }
     }
 

@@ -1,0 +1,31 @@
+# for python 3.7+
+
+mysqlclient
+aliyun-mns
+DBUtils
+requests
+rsa
+pyDes
+qrcode
+redis
+pycryptodome
+audioread
+wechatpy
+-e 'git+https://github.com/uimeet/alipay.git#egg=python-alipay-sdk'
+tldextract
+Pillow
+oss2
+aliyun-python-sdk-core
+aliyun-python-sdk-mts
+-e 'git+https://github.com/uimeet/python-ua-device.git#egg=uadevice'
+-e 'git+https://github.com/uimeet/getui.git#egg=getui'
+beautifulsoup4
+-e 'git+https://github.com/elastic/elasticsearch-py.git#egg=elasticsearch'
+threadpool
+pyopenssl
+arrow
+supervisor
+markdown
+aliyun-python-sdk-green
+requests-html
+pysocks
