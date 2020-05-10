@@ -2,6 +2,7 @@ import os
 import asyncio
 import tldextract
 from requests_html import HTMLSession
+import traceback
 from core import utils, messages
 
 from apps import async_response
@@ -75,10 +76,14 @@ class PingGet(ApiViewBase):
             }
 
         session = HTMLSession()
-        r = session.get(domain, proxies=proxies)
+        try:
+            r = session.get(domain, proxies=proxies)
 
-        title = r.html.find('title', first=True)
-        return title.text if title else '<未获取到title>'
+            title = r.html.find('title', first=True)
+            return title.text if title else '<未获取到title>'
+        except:
+            traceback.print_exc()
+            return '<Title获取失败>'
 
 
 class DNSPolluteCheck(ApiViewBase):
