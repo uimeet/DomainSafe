@@ -35,6 +35,8 @@ class PingGet(ApiViewBase):
         if not domain.startswith('http'):
             domain = f'http://{domain}'
 
+        if domain.endswith('/'):
+            domain = domain[:-1]
         # 获取ip地址
         p = self.get_ip(domain)
         # 获取标题
@@ -60,7 +62,7 @@ class PingGet(ApiViewBase):
             if line.startswith('Address:') and ips is not None:
                 ips.append(line.split(':')[-1].strip())
 
-        return ips
+        return ips or []
 
     def get_title(self, domain):
         """

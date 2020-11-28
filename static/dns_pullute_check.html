@@ -29,6 +29,7 @@
 
             startChecking();
             $.each(domains.split('\n'), function (index, item) {
+                item = item.replace('https//', 'https://').replace('http//', 'http://');
                 let domain = getMainHost(item);
                 putCheckResult(domain);
                 $.get('/api/app/domain/pollute_check?domains=' + domain, function (response) {
